@@ -1,0 +1,64 @@
+%type declaration predicates
+character : type.
+actor     : character -> type.
+location  : type.
+object    : type.
+
+
+% Definitions of roles in game.
+player      : character.
+monster     : character.
+Player      : actor player.
+Monster     : actor monster.
+path        : location.
+road        : location.
+crossroads  : location.      %initial location
+crowbar     : object.
+key         : object.
+treasure    : object.
+
+
+% states
+inGame      : character -> type.
+accessible  : location -> location -> type.
+dead        : character -> type.
+killed      : character -> character -> type.
+isKiller    : character -> type.
+cAt         : character -> location -> type.
+oAt         : object -> location -> type
+has         : character -> object -> type.
+isDynamic   : character -> type.
+
+
+% Permanent states in game.
+access1 : accessible crossroads path.     %you can reach the path from the crossroads
+access2 : accessible crossroads road.
+access3 : accessible path castle.
+access4 : accessible insideCastle castle.
+
+
+%Actions
+move
+: inGame C * isDynamic C *
+  cAt C L * accessible L L'
+  -o {@at C L'}.
+
+murder 
+: actor C * actor C' *
+  cAt C L * cAt C' L  * isKiller C
+  -o {@cAt C L * !dead C' * !killed C C'}.
+
+obtain
+  : actor C *
+    cAt C L * oAt O L
+    -o {@cAt C L * @has C O}.
+
+
+% initial state
+init : type
+= { @inGame Player * isDynamic Player * 
+  @inGame Monster * @isKiller Monster
+  @at Player crossroads * @at Monster path * 
+  @has Player crowbar * @has Player key *  * gameActive}.
+
+#query * * * 1 init -o {gameOver}.
