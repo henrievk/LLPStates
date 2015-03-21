@@ -1,0 +1,28 @@
+% Resources
+walkLeft     : type.
+walkRight    : type.
+key          : type.
+crowbar      : type.
+door         : type.
+insideCastle : type.
+wizardHelp   : type.
+riddle       : type.
+answer       : type.
+monster      : type.
+treasure     : type.
+dead         : type.
+
+% Actions
+isKilled    : type = 		monster -o { @dead }.
+getTreasure : type = 		insideCastle * answer -o { @treasure }.
+unlockDoor  : type =      	key * door -o { insideCastle * @key * @getTreasure }.
+breakIn     : type =       	crowbar * door -o { insideCastle * @crowbar * @getTreasure }.
+getAnswer   : type =   		riddle * wizardHelp -o { @answer }.
+followRoad  : type =       	walkRight -o { door * riddle * @breakIn * @unlockDoor }.
+followPath  : type =       	walkLeft -o { monster }.
+
+% Initial Environment
+init : type = { (walkLeft & walkRight) * @key * @crowbar * @followRoad * @followPath * @wizardHelp * @getAnswer * @isKilled }.
+
+% Query
+#query * * * 20 (init -o { treasure }).
